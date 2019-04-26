@@ -5,6 +5,8 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
 
+//Citation: Sam's old test cases.
+
 /**
  * Some tests of skip lists.
  *
@@ -54,7 +56,6 @@ public class SkipListTests {
   ArrayList<String> operations;
 
 
-
   // +---------+---------------------------------------------------------
   // | Helpers |
   // +---------+
@@ -68,7 +69,6 @@ public class SkipListTests {
     this.ints = new SkipList<Integer, String>((i, j) -> i - j);
     this.strings = new SkipList<String, String>((s, t) -> s.compareTo(t));
     this.operations = new ArrayList<String>();
-    System.err.println("SETUP");
   } // setup
 
   /**
@@ -144,20 +144,29 @@ public class SkipListTests {
   // +--------------------+
 
   /**
-   * Add an integer to the ints list.
+   * Set an entry in the ints list.
    */
   void set(Integer i) {
     operations.add("set(" + i + ");");
     ints.set(i, value(i));
-  } // add
+  } // set(Integer)
 
   /**
-   * Add a string to the strings list.
+   * Set an entry in the ints list.
+   */
+  void set(Integer key, String value) {
+    operations.add("set(" + key + ");");
+    ints.set(key, value);
+  } // set(Integer)
+
+  /**
+   * Set an entry in the strings list.
    */
   void set(String str) {
     operations.add("set(\"" + str + "\");");
     strings.set(str, value(str));
-  } // add(String)
+  } // set(String)
+
 
   /**
    * Remove an integer from the ints list.
@@ -170,10 +179,35 @@ public class SkipListTests {
   /**
    * Remove a string from the strings list.
    */
-  void add(String str) {
+  void remove(String str) {
     operations.add("remove(\"" + str + "\");");
     strings.remove(str);
   } // remove(String)
+
+  /**
+   * @return the associated value from the ints list.
+   */
+  String get(Integer i) {
+    operations.add("get(\"" + i + ");");
+    return ints.get(i);
+  }
+
+  /**
+   * @return the associated value from the strings list.
+   */
+  String get(String str) {
+    operations.add("get(\"" + str + ");");
+    return strings.get(str);
+  }
+
+  void prob(double i) {
+    ints.prob = i;
+    strings.prob = i;
+  }
+
+  int size() {
+    return ints.size;
+  }
 
   /**
    * Log a failure.
@@ -207,7 +241,7 @@ public class SkipListTests {
   public void simpleTest() {
     setup();
     set("hello");
-    // assertTrue(strings.containsKey("hello"));
+    assertTrue(strings.containsKey("hello"));
     assertFalse(strings.containsKey("goodbye"));
   } // simpleTest()
 
@@ -318,7 +352,91 @@ public class SkipListTests {
     } // if (!ok)
   } // randomTest()
 
-  /*
-   * public static void main(String[] args) { SkipListTests slt = new SkipListTests(); slt.setup();
-   * slt.simpleTest(); } // main
-   */} // class SkipListTests
+  /**
+   * A repeated keys test.
+   */
+  @Test
+  public void repeatTest() {
+    setup();
+    set("hello");
+    set("hello");
+    set("hello");
+    assertTrue(strings.containsKey("hello"));
+    remove("hello");
+    assertFalse(strings.containsKey("hello"));
+  }// repeatTest
+
+  /**
+   * Verify the value returned by get() method.
+   */
+  @Test
+  public void getTest() {
+    setup();
+    set("hello");
+    set("hi");
+    set("sam");
+    assertTrue(value("hello").compareTo(get("hello")) == 0);
+    assertTrue(value("sam").compareTo(get("sam")) == 0);
+  }// getTest
+
+  /**
+   * Verify then the prob is pretty high so that the height of the node would be higher than
+   * INITIAL_HEIGHT.
+   */
+  @Test
+  public void heightTest() {
+    setup();
+    prob(0.99);
+    set("hello");
+    assertTrue(strings.containsKey("hello"));
+  } // heightTest()
+
+  /**
+   * A permutation key test
+   */
+  @Test
+  public void permutedKeyTest() {
+    setup();
+    set(1);
+    assertTrue(value(1).compareTo(get(1)) == 0);
+    set(1, "This is the value of key 1");
+    assertFalse(value(1).compareTo(get(1)) == 0);
+    assertTrue(get(1).compareTo("This is the value of key 1") == 0);
+  }// permutedKeyTest()
+
+  /**
+   * Verify removing elements from the lists backwardly.
+   */
+  @Test
+  public void backwardTest() {
+    setup();
+    // Add a bunch of values
+    for (int i = 0; i < 100; i++) {
+      set(i);
+    } // for
+    for (int j = 99; j > -1; j--) {
+      remove(j);
+      assertFalse(ints.containsKey(j));
+    }
+  } // backwardTest()
+
+  /**
+   * Verify the size of the list.
+   */
+  @Test
+  public void sizeTest() {
+    setup();
+    // Add a bunch of values
+    for (int i = 0; i < 100; i++) {
+      set(i);
+      assertTrue(i + 1 == size());
+    } // for
+  } // sizeTest()
+
+
+  public static void main(String[] args) {
+    SkipListTests slt = new SkipListTests();
+    slt.setup();
+    slt.simpleTest();
+  } // main
+} // class SkipListTests
